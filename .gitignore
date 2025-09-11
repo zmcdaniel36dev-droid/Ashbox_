@@ -1,0 +1,58 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+build.gradle.kts
+
+# IDE files (Android Studio, IntelliJ)
+.idea/
+*.iml
+*.iws
+.gradle/
+build/
+local.properties
+
+# Android build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# Keystore files (NEVER commit these!)
+*.jks
+*.keystore
+
+# Google Services (if you download the JSON file directly and don't want to commit it)
+# google-services.json # Uncomment if you manually place it and don't want to track
+
+# Captures and heap dumps
+captures/
+*.hprof
+
+# Log files
+*.log
+
+# Dependency lockfiles (if your package manager generates them and you prefer not to track)
+# yarn.lock
+# package-lock.json
+
+# Operating System files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Android Studio specific temporary files
+.cxx/
+*/build/kotlin/

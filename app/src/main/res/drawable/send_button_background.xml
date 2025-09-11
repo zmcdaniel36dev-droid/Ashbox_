@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">  
+    <solid android:color="@color/accent_coral"/> 
+
+    <corners android:radius="18dp"/> <!-- MOVED 'radius' INSIDE the <corners> tag -->
+
+    <!-- Optional: Add padding if your icon needs more space from the shape's edge -->
+    <!-- <padding
+        android:left="8dp"
+        android:top="8dp"
+        android:right="8dp"
+        android:bottom="8dp"/> -->
+
+</shape>
+
