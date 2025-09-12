@@ -111,23 +111,47 @@ class ChatViewModel @Inject constructor(
              id = UUID.randomUUID().toString()
         )
 
-        // Create a new list of messages including the new user message
-        val updatedMessages = _uiState.value.messages.toMutableList().apply {
-            add(newUserMessage)
-        }.toList() // Convert back to immutable list
+        updateMessages(newUserMessage, true)
 
-        _uiState.value = _uiState.value.copy(
-            messages = updatedMessages,
-            currentInputText = "",
-            isSendingMessage = true
-        )
-
-        /*viewModelScope.launch {
+        viewModelScope.launch {
             try {
-                val aiResponseContent =
-            }
-        }*/
+                val aiResponseContent = OpenAIUtil.getAiResponse(_uiState.value.messages)
 
+                val aiMessage = ChatMessage(
+                    sessionId = activeSessionId,
+                    content = aiResponseContent.toString(),
+                    sender = SenderType.AI,
+                    id = UUID.randomUUID().toString()
+                )
+
+               updateMessages(aiMessage, false)
+
+            } catch (e: Exception) {
+                Log.e("ChatViewModel", "Error getting AI response", e)
+                e.printStackTrace() // Important for debugging
+                _uiState.update { currentState ->
+
+                    currentState.copy(
+                        errorMessage = "Error: Could not get response from AI.",
+                        isSendingMessage = false // Always hide the loading indicator on completion/error
+                    )
+                }            }
+        }
+
+    }
+
+    fun updateMessages(message: ChatMessage, sending: Boolean) {
+        _uiState.update { currentState ->
+            val updatedMessages = currentState.messages.toMutableList().apply {
+                add(message)
+            }.toList()
+
+            currentState.copy(
+                messages = updatedMessages,
+                isSendingMessage = sending,
+                currentInputText = ""
+            )
+        }
     }
 
     /**

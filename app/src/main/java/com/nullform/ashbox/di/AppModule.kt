@@ -1,4 +1,4 @@
-package com.nullform.ashbox.ui.di
+package com.nullform.ashbox.di
 
 import android.content.Context
 import com.nullform.ashbox.ui.aiutils.OpenAIUtil
@@ -15,7 +15,7 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideOpenAIUtil(@ApplicationContext context: Context): OpenAIUtil {
-        return OpenAIUtil(context)
+    fun provideOpenAIUtil(): OpenAIUtil {
+        return OpenAIUtil
     }
 }
