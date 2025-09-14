@@ -1,21 +1,21 @@
 package com.nullform.ashbox.di
 
-import android.content.Context
-import com.nullform.ashbox.ui.aiutils.OpenAIUtil
+import com.nullform.ashbox.ui.aiutils.OllamaUtil
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.InternalSerializationApi
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    @OptIn(markerClass = arrayOf(InternalSerializationApi::class))
     @Singleton
     @Provides
-    fun provideOpenAIUtil(): OpenAIUtil {
-        return OpenAIUtil
+    fun provideOpenAIUtil(): OllamaUtil {
+        return OllamaUtil
     }
 }

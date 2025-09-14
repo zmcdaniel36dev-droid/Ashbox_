@@ -1,7 +1,7 @@
 [versions]
-hilt = "2.51.1"
-agp = "8.12.2"
-hiltVersion = "2.51.1"
+hilt = "2.56.2"
+agp = "8.12.3"
+hiltVersion = "2.56.2"
 kotlin = "2.0.21"
 coreKtx = "1.10.1"
 junit = "4.13.2"
@@ -15,9 +15,11 @@ lifecycleViewmodelKtx = "2.6.1"
 navigationFragmentKtx = "2.6.0"
 navigationUiKtx = "2.6.0"
 openaiClient = "4.0.1"
+playServicesOssLicenses = "17.3.0"
 roomCommonJvm = "2.7.2"
 ktor = "3.0.0"
-
+kotlinxSerialization = "1.6.0"
+kotlinxMetadataJvm = "0.9.0" # CORRECTED THIS LINE
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,12 +39,15 @@ androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", 
 openai-client = { module = "com.aallam.openai:openai-client", version.ref = "openaiClient" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-tor-client-contentnegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-contentnegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-utils-jvm = { module = "io.ktor:ktor-utils-jvm", version.ref = "ktor" }
-
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+kotlinx-metadata-jvm = { group = "org.jetbrains.kotlinx", name = "kotlinx-metadata-jvm", version.ref = "kotlinxMetadataJvm" } # ADDED THIS LINE
+play-services-oss-licenses = { module = "com.google.android.gms:play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
 
 [plugins]
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinxSerialization" }
