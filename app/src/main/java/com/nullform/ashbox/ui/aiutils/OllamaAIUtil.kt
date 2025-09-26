@@ -51,13 +51,15 @@ object OllamaUtil {
     private const val OLLAMA_API_URL = "http://192.168.5.225:11434/api/chat"
     private const val OLLAMA_MODEL = "tinyllama"
 
+    private val jsonStreamParser = Json {
+        ignoreUnknownKeys = true
+        prettyPrint = true
+    }
+
     // Ktor HttpClient setup for JSON communication
     private val client = HttpClient(OkHttp) {
         install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-
-            })
+            json(jsonStreamParser)
         }
     }
 
@@ -104,7 +106,7 @@ object OllamaUtil {
                     val line = channel.readUTF8Line()
                     if (line != null && line.isNotBlank()) {
                         // Each line is a JSON object, parse it
-                        val ollamaResponse = Json.decodeFromString<OllamaResponse>(line)
+                        val ollamaResponse = jsonStreamParser.decodeFromString<OllamaResponse>(line)
                         // Emit only the content part of the message
                         emit(ollamaResponse.message.content)
                     }

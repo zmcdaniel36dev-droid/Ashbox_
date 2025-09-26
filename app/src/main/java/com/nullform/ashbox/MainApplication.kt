@@ -5,6 +5,8 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class MainApplication : Application() {
-    // This class is mostly empty for now.
-    // Hilt uses this annotation to generate the necessary code.
+
+    override fun onCreate() {
+        super.onCreate()
+    }
 }

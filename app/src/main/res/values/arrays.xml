@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Entries for the App Theme ListPreference -->
+    <string-array name="theme_entries">
+        <item>System Default</item>
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Black AMOLED</item>
+    </string-array>
+
+    <!-- Values for the App Theme ListPreference (corresponds to entries) -->
+    <string-array name="theme_values">
+        <item>system_default</item>
+        <item>light</item>
+        <item>dark</item>
+        <item>black_amoled</item>
+    </string-array>
+</resources>

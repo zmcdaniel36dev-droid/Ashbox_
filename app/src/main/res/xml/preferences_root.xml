@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:title="General">
+
+        <ListPreference
+            app:key="app_theme"
+            app:title="App Theme"
+            app:defaultValue="system_default"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:icon="@drawable/ic_settings_theme" />
+
+        <SwitchPreferenceCompat
+            app:key="haptic_feedback"
+            app:title="Haptic Feedback"
+            app:defaultValue="true"
+            app:summary="Vibrate on tap and interaction"
+            app:icon="@drawable/ic_settings_haptic" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="AI Model Settings">
+
+        <Preference
+            app:key="ai_persona"
+            app:title="Persona"
+            app:summary="Customize your AI's personality (Coming Soon)"
+            app:icon="@drawable/ic_settings_persona"/>
+
+        <ListPreference
+            app:key="context_window_size"
+            app:title="Context Window Size"
+            app:summary="Larger windows use more memory but improve recall"
+            app:defaultValue="4096"
+            app:entries="@array/context_window_entries"
+            app:entryValues="@array/context_window_values"
+            app:icon="@drawable/ic_settings_context_window" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Privacy">
+
+        <SwitchPreferenceCompat
+            app:key="save_chat_history"
+            app:title="Save Chat History"
+            app:defaultValue="true"
+            app:summary="Saves your chat history"
+            app:icon="@drawable/ic_settings_chat_history"/>
+
+        <Preference
+            app:key="clear_chat_history"
+            app:title="Clear All Chat History"
+            app:summary="Permanently delete all saved chat messages"
+            app:icon="@drawable/ic_settings_delete"/>
+
+        <Preference
+            app:key="privacy_policy"
+            app:title="Privacy Policy"
+            app:summary="View our privacy policy"
+            app:icon="@drawable/ic_settings_privacy"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="About Ashbox">
+
+        <Preference
+            app:key="contact_feedback"
+            app:title="Contact Us / Feedback"
+            app:summary="Send us your feedback"
+            app:icon="@drawable/ic_settings_feedback"/>
+
+        <Preference
+            app:key="app_version"
+            app:title="Version"
+            app:summary="1.0.0"
+            app:icon="@drawable/ic_settings_version"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

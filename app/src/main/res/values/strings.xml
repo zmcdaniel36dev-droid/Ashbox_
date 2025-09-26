@@ -20,4 +20,20 @@
     <string name="cd_send_message">Send Messages</string>
     <string name="message_hint">Ask any question</string>
     <string name="welcome_text">Welcome! \n Start a chat or load one from history.</string>
+    <string name="read_more">Read More</string>
+
+    <!-- Context Window Size Preference -->
+    <string-array name="context_window_entries">
+        <item>2048 Tokens</item>
+        <item>4096 Tokens (Default)</item>
+        <item>8192 Tokens</item>
+        <item>16384 Tokens</item>
+    </string-array>
+
+    <string-array name="context_window_values">
+        <item>2048</item>
+        <item>4096</item>
+        <item>8192</item>
+        <item>16384</item>
+    </string-array>
 </resources>

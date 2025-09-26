@@ -25,6 +25,7 @@ import com.nullform.ashbox.databinding.FragmentChatBinding
 import com.nullform.ashbox.ui.chat.ChatViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.activity.viewModels
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.zip.Inflater
@@ -40,6 +41,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         binding.chatViewModel = chatViewModel
         binding.lifecycleOwner = this

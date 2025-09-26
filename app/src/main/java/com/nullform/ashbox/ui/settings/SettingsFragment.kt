@@ -1,42 +1,36 @@
 package com.nullform.ashbox.ui.settings
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.nullform.ashbox.databinding.FragmentsSettingsBinding
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import com.nullform.ashbox.R
 
-class SettingsFragment : Fragment() {
+class SettingsFragment : PreferenceFragmentCompat() {
 
-    private var _binding: FragmentsSettingsBinding? = null
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.preferences_root, rootKey)
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+        // Find the 'app_theme' ListPreference
+        val appThemePreference: ListPreference? = findPreference("app_theme")
+        appThemePreference?.let {
+            // Set the initial summary based on the current value
+            setListPreferenceSummary(it, it.value)
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        val settingsViewModel =
-            ViewModelProvider(this).get(SettingsViewModel::class.java)
-
-        _binding = FragmentsSettingsBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        val textView: TextView = binding.textGallery
-        settingsViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+            // Set a listener to update the summary when the value changes
+            it.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { preference, newValue ->
+                setListPreferenceSummary(preference as ListPreference, newValue.toString())
+                true // Indicate that the new value should be saved
+            }
         }
-        return root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    /**
+     * Helper function to update the summary of a ListPreference.
+     */
+    private fun setListPreferenceSummary(preference: ListPreference, value: String?) {
+        val index = preference.findIndexOfValue(value)
+        // Set the summary to the entry corresponding to the selected value
+        preference.summary = if (index >= 0) preference.entries[index] else null
     }
 }

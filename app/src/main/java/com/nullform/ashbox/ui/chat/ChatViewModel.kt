@@ -3,6 +3,7 @@ package com.nullform.ashbox.ui.chat
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nullform.ashbox.data.Model
 import com.nullform.ashbox.data.entity.ChatMessage
 import com.nullform.ashbox.data.entity.SenderType
 import com.nullform.ashbox.ui.aiutils.OllamaUtil
@@ -144,6 +145,10 @@ class ChatViewModel @Inject constructor(
 
     // In ChatViewModel.kt
 
+    fun selectModel(model: Model) {
+        _uiState.update { it.copy(selectedModel = model) }
+    }
+
     fun sendUserMessage() {
         val messageContent: String = _uiState.value.currentInputText
         if (messageContent.isBlank() || _uiState.value.isSendingMessage) {
@@ -197,17 +202,21 @@ class ChatViewModel @Inject constructor(
 
                 // Assuming OllamaUtil.getAiResponseStream exists and returns a Flow<String>
                 OllamaUtil.getAiResponseStream(messageHistory)?.collect { chunk ->
-                    // 6. For each chunk, update the UI state again.
+                    // 6. For each chunk, update the UI state again using an immutable approach.
                     _uiState.update { currentState ->
-                        // Find the last message (our placeholder) and append the new chunk.
-                        val updatedMessages = currentState.messages.toMutableList().apply {
-                            val lastMessage = last()
-                            val updatedMessage = lastMessage.copy(content = lastMessage.content + chunk)
-                            set(lastIndex, updatedMessage) // Replace the last element
-                        }.toList()
+                        val currentMessages = currentState.messages.toMutableList()
+                        val lastMessageIndex = currentMessages.lastIndex
 
-                        // Update the state with the new list of messages.
-                        currentState.copy(messages = updatedMessages)
+                        if (lastMessageIndex != -1) {
+                            val lastMessage = currentMessages[lastMessageIndex]
+                            // Create a NEW message object with the updated content
+                            val updatedMessage = lastMessage.copy(content = lastMessage.content + chunk)
+                            // Replace the old message with the new one
+                            currentMessages[lastMessageIndex] = updatedMessage
+                        }
+
+                        // Update the state with the new list containing the new message object
+                        currentState.copy(messages = currentMessages.toList())
                     }
                 }
 

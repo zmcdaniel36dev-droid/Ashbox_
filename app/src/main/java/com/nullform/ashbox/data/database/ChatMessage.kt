@@ -1,9 +1,10 @@
-package com.nullform.ashbox.data.entity
+package com.nullform.ashbox.data.database
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.nullform.ashbox.data.database.ChatSession
 import java.util.UUID
 
 enum class SenderType {
@@ -25,7 +26,7 @@ data class ChatMessage(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
     val sessionId: String, // Foreign key linking to ChatSession
-    val content: String,
+    var content: String,
     val sender: SenderType,
     val timestamp: Long = System.currentTimeMillis(),
     val isProcessing: Boolean = false // Useful for AI messages that are being generated

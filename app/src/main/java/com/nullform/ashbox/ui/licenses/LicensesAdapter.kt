@@ -1,71 +1,70 @@
 package com.nullform.ashbox.ui.licenses
 
-import LicenseInfo
+import android.text.TextUtils
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import android.widget.Button
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.nullform.ashbox.databinding.ItemLicenseBinding
+import com.mikepenz.aboutlibraries.entity.Library
+import com.mikepenz.aboutlibraries.util.author
+import com.nullform.ashbox.R // Make sure this points to your app's R file
 
-/**
- * An adapter for displaying a list of open-source licenses in a RecyclerView.
- *
- * @param onItemClicked A lambda function to be invoked when a license item is clicked.
- *                      It provides the LicenseInfo for the clicked item.
- */
-class LicensesAdapter(
-    private val onItemClicked: (LicenseInfo) -> Unit
-) : ListAdapter<LicenseInfo, LicensesAdapter.LicenseViewHolder>(LicenseDiffCallback()) {
+class LicenseAdapter(private val libraries: List<Library>) :
+    RecyclerView.Adapter<LicenseAdapter.LicenseViewHolder>() {
 
-    /**
-     * ViewHolder for a single license item.
-     */
-    inner class LicenseViewHolder(private val binding: ItemLicenseBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    private val NO_LICENSE_TEXT = "No license text available."
 
-        init {
-            // Set the click listener on the root view of the item
-            binding.root.setOnClickListener {
-                val position = adapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    onItemClicked(getItem(position))
-                }
-            }
-        }
-
-        fun bind(licenseInfo: LicenseInfo) {
-            binding.libraryNameTextView.text = licenseInfo.libraryName
-        }
+    class LicenseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val libraryName: TextView = itemView.findViewById(R.id.license_library_name)
+        val author: TextView = itemView.findViewById(R.id.license_author)
+        val licenseText: TextView = itemView.findViewById(R.id.license_text)
+        val readMoreButton: Button = itemView.findViewById(R.id.license_read_more_button)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LicenseViewHolder {
-        val binding = ItemLicenseBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return LicenseViewHolder(binding)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_license, parent, false)
+        return LicenseViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: LicenseViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val library = libraries[position]
+
+        holder.libraryName.text = library.name
+        holder.author.text = library.author
+
+        // Set license text, handling potential truncation
+        val licenseContent = library.licenses.firstOrNull()?.licenseContent
+        if (!licenseContent.isNullOrBlank()) {
+            holder.licenseText.text = licenseContent
+            holder.licenseText.post { // Post to ensure layout has been measured
+                if (holder.licenseText.layout != null && holder.licenseText.layout.lineCount > holder.licenseText.maxLines) {
+                    holder.readMoreButton.visibility = View.VISIBLE
+                    // You would typically handle a click listener here to show the full text
+                    // For now, it just appears.
+                    holder.readMoreButton.setOnClickListener {
+                        // Implement logic to show full license text, e.g., in a dialog or new fragment
+                        // For demonstration, let's just log it:
+                        // Log.d("LicenseAdapter", "Read More clicked for ${library.name}")
+                        // To actually show full text:
+                        // val dialogFragment = FullLicenseDialogFragment.newInstance(library.name, licenseContent)
+                        // dialogFragment.show((holder.itemView.context as? AppCompatActivity)?.supportFragmentManager!!, "full_license_dialog")
+                        // For now, we'll expand it directly for simplicity, but a dialog is better for long text
+                        holder.licenseText.maxLines = Int.MAX_VALUE // Expand fully
+                        holder.licenseText.ellipsize = null // Remove ellipsis
+                        holder.readMoreButton.visibility = View.GONE // Hide button after expanding
+                    }
+                } else {
+                    holder.readMoreButton.visibility = View.GONE
+                }
+            }
+        } else {
+            holder.licenseText.text = NO_LICENSE_TEXT
+            holder.readMoreButton.visibility = View.GONE
+        }
     }
 
-    /**
-     * DiffUtil.ItemCallback for calculating the difference between two non-null items in a list.
-     * This allows the ListAdapter to determine which items have been added, removed, or changed,
-     * leading to efficient updates.
-     */
-    private class LicenseDiffCallback : DiffUtil.ItemCallback<LicenseInfo>() {
-        override fun areItemsTheSame(oldItem: LicenseInfo, newItem: LicenseInfo): Boolean {
-            // Library names are unique enough to be used as identifiers
-            return oldItem.libraryName == newItem.libraryName
-        }
-
-        override fun areContentsTheSame(oldItem: LicenseInfo, newItem: LicenseInfo): Boolean {
-            // The LicenseInfo is a data class, so '==' performs a structural equality check.
-            return oldItem == newItem
-        }
-    }
+    override fun getItemCount(): Int = libraries.size
 }

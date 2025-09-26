@@ -103,7 +103,8 @@
                     android:contentDescription="@string/cd_send_message"
                     android:minWidth="48dp"
                     android:minHeight="48dp"
-                    app:icon="@drawable/ic_white_send_24" /> <!-- You'll need an ic_send drawable -->
+                    app:icon="@drawable/ic_white_send_24"
+                    app:iconTint="@android:color/white" />
 
                 <!-- Optional ProgressBar for when a message is being sent -->
                 <ProgressBar

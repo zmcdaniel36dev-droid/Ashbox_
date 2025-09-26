@@ -15,4 +15,9 @@
     <!-- New Chat Bubble Colors -->
     <color name="ai_bubble_color">#FF4A5C6A</color>
     <color name="user_bubble_color">#FF2A4D69</color>
+
+    <!-- Colors for LicensesFragment Theming -->
+    <color name="dark_background">#FF222222</color>
+    <color name="text_off_white_light">#FFCCCCCC</color>
+    <color name="dark_background_lighter">#FF333333</color>
 </resources>
