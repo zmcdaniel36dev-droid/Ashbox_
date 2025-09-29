@@ -35,11 +35,13 @@ class ChatViewModel @Inject constructor(
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
     private var messageLoadingJob: Job? = null
+    private var tempIdCounter = -1L
+
 
     init {
         _uiState.value =
             ChatUiState(
-                currentChatSessionId = UUID.randomUUID().toString(),
+                currentChatSessionId = null,
                 messages = mutableListOf<ChatMessage>(),
                 currentInputText = "",
                 isLoadingMessages = false,
@@ -51,7 +53,7 @@ class ChatViewModel @Inject constructor(
     /**
      * Call this when a user selects an existing chat or a new chat is explicitly started.
      */
-    fun loadChatSession(sessionId: String) {
+    fun loadChatSession(sessionId: Long) {
         messageLoadingJob?.cancel() // Cancel any ongoing message loading
         _uiState.value =
             ChatUiState(
@@ -87,153 +89,115 @@ class ChatViewModel @Inject constructor(
         Log.d("onUserMessageChanged", _uiState.value.currentInputText)
     }
 
-    /**
-     * Corrected: Takes the message content as a parameter and updates the ViewModel's state.
-     * It does NOT interact with the adapter or any UI component, and no AI simulation.
-     */
-    /*fun sendUserMessage() {
-        val messageContent: String = _uiState.value.currentInputText
-        if (messageContent.isBlank() || _uiState.value.isSendingMessage) {
-            return
-        }
-
-        val activeSessionId = _uiState.value.currentChatSessionId
-        if (activeSessionId == null) {
-            Log.e("ChatViewModel", "Cannot send message: currentChatSessionId is null.")
-            return
-        }
-
-        val newUserMessage = ChatMessage(
-            sessionId = activeSessionId,
-            content = messageContent,
-            sender = SenderType.USER,
-             id = UUID.randomUUID().toString()
-        )
-
-        updateMessages(newUserMessage, true)
-
-        viewModelScope.launch {
-            try {
-
-                val aiMessage = ChatMessage(content = "", sender = SenderType.AI, sessionId = activeSessionId)
-                _messages.update { currentMessage -> currentMessage + aiMessage }
-
-                val messageHistory = _messages.value
-                OllamaUtil.getAiResponseStream(messageHistory)?.collect { chunk ->
-
-
-                    /*_messages.update { currentMessages ->
-                        val lastMessage  = currentMessages.last()
-                        val updatedMessages = lastMessage.copy(content = lastMessage.content + chunk)
-                        currentMessages.dropLast(1) + updatedMessages
-                    }*/
-                }
-
-            } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error getting AI response", e)
-                e.printStackTrace() // Important for debugging
-                _uiState.update { currentState ->
-
-                    currentState.copy(
-                        errorMessage = "Error: Could not get response from AI.",
-                        isSendingMessage = false // Always hide the loading indicator on completion/error
-                    )
-                }
-            }
-        }
-    }*/
-
-    // In ChatViewModel.kt
-
     fun selectModel(model: Model) {
         _uiState.update { it.copy(selectedModel = model) }
     }
 
-    fun sendUserMessage() {
-        val messageContent: String = _uiState.value.currentInputText
-        if (messageContent.isBlank() || _uiState.value.isSendingMessage) {
-            return
-        }
+fun sendUserMessage() {
+    val TAG = "sendUserMessage"
+    Log.d(TAG, "Attempting to send message. Current text: '${_uiState.value.currentInputText}', Sending: ${_uiState.value.isSendingMessage}")
 
-        val activeSessionId = _uiState.value.currentChatSessionId
-        if (activeSessionId == null) {
-            Log.e("ChatViewModel", "Cannot send message: currentChatSessionId is null.")
-            return
-        }
+    val messageContent = _uiState.value.currentInputText
+    if (messageContent.isBlank() || _uiState.value.isSendingMessage) {
+        Log.w(TAG, "Exiting: Message is blank or already sending.")
+        return
+    }
 
-        // 1. Create the user's message
-        val newUserMessage = ChatMessage(
-            sessionId = activeSessionId,
-            content = messageContent,
-            sender = SenderType.USER,
-            id = UUID.randomUUID().toString()
+    var activeSessionId = _uiState.value.currentChatSessionId
+    if (activeSessionId == null) {
+        Log.i(TAG, "No active session ID. Creating a new one.")
+        activeSessionId = System.currentTimeMillis()
+        _uiState.update { it.copy(currentChatSessionId = activeSessionId) }
+    }
+
+    val newUserMessage = ChatMessage(
+        id = tempIdCounter--,
+        sessionId = activeSessionId,
+        text = messageContent,
+        sender = SenderType.USER
+    )
+
+    _uiState.update { currentState ->
+        currentState.copy(
+            messages = currentState.messages + newUserMessage,
+            isSendingMessage = true,
+            currentInputText = ""
         )
+    }
+    Log.d(TAG, "UI updated with user message and isSendingMessage=true.")
 
-        // 2. Immediately update the UI with the user's message and enter the "sending" state.
-        _uiState.update { currentState ->
-            currentState.copy(
-                messages = currentState.messages + newUserMessage, // Append the new message
-                isSendingMessage = true,
-                currentInputText = "" // Clear the input field
+    viewModelScope.launch {
+        Log.d(TAG, "Coroutine launched for AI response.")
+        var aiMessageId: Long? = null
+        try {
+            val aiPlaceholderMessage = ChatMessage(
+                id = tempIdCounter--,
+                text = "",
+                sender = SenderType.AI,
+                sessionId = activeSessionId
             )
-        }
+            aiMessageId = aiPlaceholderMessage.id // Store the unique ID
 
-        // 3. Launch a coroutine to handle the streaming AI response.
-        viewModelScope.launch {
-            try {
-                // 4. Add an empty placeholder message for the AI response.
-                val aiMessageId = UUID.randomUUID().toString()
-                val aiPlaceholderMessage = ChatMessage(
-                    id = aiMessageId,
-                    content = "", // Start with empty content
-                    sender = SenderType.AI,
-                    sessionId = activeSessionId
-                )
+            _uiState.update { it.copy(messages = it.messages + aiPlaceholderMessage) }
+            Log.d(TAG, "UI updated with AI placeholder message with ID: $aiMessageId.")
 
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        messages = currentState.messages + aiPlaceholderMessage
-                    )
-                }
+            val messageHistory = _uiState.value.messages
+            val stream = OllamaUtil.getAiResponseStream(messageHistory)
 
-                // 5. Get the current message history and start collecting the stream.
-                // Note: We get the state's value *after* adding the placeholder.
-                val messageHistory = _uiState.value.messages
+            if (stream == null) {
+                Log.e(TAG, "OllamaUtil.getAiResponseStream returned null!")
+                throw IllegalStateException("AI response stream was null.")
+            }
 
-                // Assuming OllamaUtil.getAiResponseStream exists and returns a Flow<String>
-                OllamaUtil.getAiResponseStream(messageHistory)?.collect { chunk ->
-                    // 6. For each chunk, update the UI state again using an immutable approach.
+            Log.d(TAG, "Collecting AI response stream with AGGRESSIVE batching...")
+            val chunkBuffer = StringBuilder()
+            stream.collect { chunk ->
+                chunkBuffer.append(chunk)
+                // --- AGGRESSIVE BATCHING ---
+                // Look for sentence-ending punctuation or newlines.
+                val lastDelimiter = chunkBuffer.lastIndexOfAny(charArrayOf('.', '!', '?', '\n'))
+                if (lastDelimiter != -1) {
+                    val textToAppend = chunkBuffer.substring(0, lastDelimiter + 1)
+                    chunkBuffer.delete(0, lastDelimiter + 1)
+
+                    // Correct, ID-based immutable update
                     _uiState.update { currentState ->
-                        val currentMessages = currentState.messages.toMutableList()
-                        val lastMessageIndex = currentMessages.lastIndex
-
-                        if (lastMessageIndex != -1) {
-                            val lastMessage = currentMessages[lastMessageIndex]
-                            // Create a NEW message object with the updated content
-                            val updatedMessage = lastMessage.copy(content = lastMessage.content + chunk)
-                            // Replace the old message with the new one
-                            currentMessages[lastMessageIndex] = updatedMessage
+                        val updatedMessages = currentState.messages.map { msg ->
+                            if (msg.id == aiMessageId) {
+                                msg.copy(text = msg.text + textToAppend)
+                            } else {
+                                msg
+                            }
                         }
-
-                        // Update the state with the new list containing the new message object
-                        currentState.copy(messages = currentMessages.toList())
+                        currentState.copy(messages = updatedMessages)
                     }
                 }
+            }
 
-            } catch (e: Exception) {
-                Log.e("ChatViewModel", "Error getting AI response stream", e)
+            // After the stream is finished, flush any remaining text in the buffer
+            if (chunkBuffer.isNotEmpty()) {
                 _uiState.update { currentState ->
-                    currentState.copy(errorMessage = "Error: Could not get response from AI.")
-                }
-            } finally {
-                // 7. IMPORTANT: Once the stream is finished (or an error occurs),
-                // update the state to exit the "sending" mode.
-                _uiState.update { currentState ->
-                    currentState.copy(isSendingMessage = false)
+                    val updatedMessages = currentState.messages.map { msg ->
+                        if (msg.id == aiMessageId) {
+                            msg.copy(text = msg.text + chunkBuffer.toString())
+                        } else {
+                            msg
+                        }
+                    }
+                    currentState.copy(messages = updatedMessages)
                 }
             }
+            Log.d(TAG, "Stream collection finished.")
+
+        } catch (e: Exception) {
+            Log.e(TAG, "An error occurred in the AI response coroutine.", e)
+            _uiState.update { it.copy(errorMessage = "Error: ${e.message}") }
+        } finally {
+            Log.d(TAG, "Coroutine finished. Setting isSendingMessage=false.")
+            _uiState.update { it.copy(isSendingMessage = false) }
         }
     }
+}
 
 
 
@@ -258,17 +222,13 @@ class ChatViewModel @Inject constructor(
         messageLoadingJob?.cancel()
         _uiState.value =
             ChatUiState( // Reset to a clean new chat state
-                currentChatSessionId = UUID.randomUUID().toString(),
-                messages = mutableListOf<ChatMessage>(),
+                currentChatSessionId = null,
+                messages = emptyList(),
                 currentInputText = "",
                 isLoadingMessages = false,
                 isSendingMessage = false,
                 errorMessage = null
             )
-        // Optionally, you could create and persist a ChatSession here immediately
-        // and set its ID in currentChatSessionId.
-        // For now, we'll let sendUserMessage() handle creating the session on the first message.
-        println("FAB clicked, prepared for new chat.")
     }
 
     /**

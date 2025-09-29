@@ -4,8 +4,8 @@
     <style name="Theme.Ashbox" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Customize your dark theme here. -->
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorPrimary">@color/accent_coral</item>
+        <item name="colorPrimaryVariant">@color/accent_coral</item>
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
@@ -18,6 +18,11 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
+        <!-- Switch colors for unchecked state -->
+        <item name="colorSurfaceVariant">@color/charcoal_grey_2</item>
+        <item name="colorOutline">@color/charcoal_grey</item>
+
     </style>
 
     <style name="Theme.Ashbox.NoActionBar">

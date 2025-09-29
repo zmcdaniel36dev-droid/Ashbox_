@@ -1,52 +1,47 @@
-package com.nullform.ashbox.data.repository
+package com.nullform.ashbox.data
 
 import com.nullform.ashbox.data.dao.ChatMessageDao
 import com.nullform.ashbox.data.dao.ChatSessionDao
-import com.nullform.ashbox.data.database.ChatSession
 import com.nullform.ashbox.data.entity.ChatMessage
+import com.nullform.ashbox.data.entity.ChatSession
+import com.nullform.ashbox.data.entity.SenderType
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ChatRepository @Inject constructor(
-    private val chatMessageDao: ChatMessageDao,
-    private val chatSessionDao: ChatSessionDao
+    private val chatSessionDao: ChatSessionDao,
+    private val chatMessageDao: ChatMessageDao
 ) {
-
-    // Get all chat sessions, ordered by the most recent message
     fun getAllSessions(): Flow<List<ChatSession>> = chatSessionDao.getAllSessions()
 
-    // Get all messages for a specific chat session
-    fun getMessagesForSession(sessionId: String): Flow<List<ChatMessage>> {
+    suspend fun createNewSession(title: String): Long {
+        val newSession = ChatSession(title = title)
+        return chatSessionDao.insertSession(newSession)
+    }
+
+    suspend fun deleteSession(sessionId: Long) {
+        chatSessionDao.deleteSession(sessionId)
+        chatMessageDao.deleteMessagesForSession(sessionId)
+    }
+
+    fun getMessagesForSession(sessionId: Long): Flow<List<ChatMessage>> { // Changed from String to Long
         return chatMessageDao.getMessagesForSession(sessionId)
     }
 
-    // Insert a new message and update the session's timestamp
-    suspend fun insertMessage(message: ChatMessage) {
+    suspend fun addMessageToSession(sessionId: Long, text: String, sender: SenderType) { // Changed from String to Long
+        val message = ChatMessage(
+            sessionId = sessionId,
+            text = text,
+            sender = sender
+        )
         chatMessageDao.insertMessage(message)
-        // Update the last message timestamp for the session
-        val session = chatSessionDao.getSessionById(message.sessionId)
+
+        // Update the session's last message timestamp
+        val session = chatSessionDao.getSessionById(sessionId) // No .toLong() needed now
         session?.let {
             chatSessionDao.insertSession(it.copy(lastMessageTimestamp = System.currentTimeMillis()))
         }
-    }
-
-    // Create a new chat session
-    suspend fun createNewSession(title: String): String {
-        val newSession = ChatSession(title = title)
-        chatSessionDao.insertSession(newSession)
-        return newSession.id
-    }
-
-    // Get a session by its ID
-    suspend fun getSessionById(sessionId: String): ChatSession? {
-        return chatSessionDao.getSessionById(sessionId)
-    }
-
-    // Delete a chat session and all its messages
-    suspend fun deleteSession(sessionId: String) {
-        chatSessionDao.deleteSession(sessionId)
-        chatMessageDao.deleteMessagesForSession(sessionId)
     }
 }

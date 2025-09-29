@@ -4,8 +4,8 @@
     <style name="Theme.Ashbox" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_700</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorPrimary">@color/accent_coral</item>
+        <item name="colorPrimaryVariant">@color/accent_coral</item>
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
@@ -22,6 +22,10 @@
         <!-- Custom text colors for Preferences -->
         <item name="android:textColorPrimary">@color/text_off_white</item>
         <item name="android:textColorSecondary">@color/text_off_white</item>
+
+        <!-- Switch colors for unchecked state -->
+        <item name="colorSurfaceVariant">@color/charcoal_grey_2</item>
+        <item name="colorOutline">@color/charcoal_grey</item>
 
     </style>
 

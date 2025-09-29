@@ -74,7 +74,7 @@ object OllamaUtil {
             }
             OllamaMessage(
                 role = role,
-                content = appMessage.content
+                content = appMessage.text
             )
         }
     }

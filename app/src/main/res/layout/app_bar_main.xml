@@ -15,6 +15,7 @@
         tools:context=".MainActivity">
 
         <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:theme="@style/Theme.Ashbox.AppBarOverlay">
@@ -22,7 +23,7 @@
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
+                android:layout_height="wrap_content"
                 android:background="@drawable/bg_nav_header_coral_gradient"
                 app:popupTheme="@style/Theme.Ashbox.PopupOverlay" />
 

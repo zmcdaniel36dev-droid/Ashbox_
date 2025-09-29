@@ -24,6 +24,12 @@
         tools:layout="@layout/fragment_models"/>
 
     <fragment
+        android:id="@+id/nav_history"
+        android:name="com.nullform.ashbox.ui.history.HistoryFragment"
+        android:label="History"
+        tools:layout="@layout/fragment_history" />
+
+    <fragment
         android:id="@+id/nav_settings"
         android:name="com.nullform.ashbox.ui.settings.SettingsFragment"
         android:label="@string/menu_settings"
@@ -34,4 +40,15 @@
         android:name="com.nullform.ashbox.ui.licenses.LicensesFragment"
         android:label="@string/menu_licenses"
         tools:layout="@layout/fragment_licenses" />
+
+    <fragment
+        android:id="@+id/webview"
+        android:name="com.nullform.ashbox.ui.WebViewFragment"
+        android:label="WebView"
+        tools:layout="@layout/fragment_webview">
+        <argument
+            android:name="url"
+            app:argType="string"
+            android:defaultValue="about:blank" />
+    </fragment>
 </navigation>

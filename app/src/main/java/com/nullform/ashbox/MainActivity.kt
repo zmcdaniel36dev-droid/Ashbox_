@@ -1,16 +1,9 @@
 package com.nullform.ashbox
 
-import android.content.Context
 import android.os.Bundle
-import android.util.AttributeSet
 import android.util.Log
-import android.view.ActionMode
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.viewModels
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
@@ -24,11 +17,10 @@ import com.nullform.ashbox.databinding.ActivityMainBinding
 import com.nullform.ashbox.databinding.FragmentChatBinding
 import com.nullform.ashbox.ui.chat.ChatViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
-import androidx.fragment.app.Fragment
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import java.util.zip.Inflater
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.nullform.ashbox.ui.WebViewFragment
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -38,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private val chatViewModel: ChatViewModel by viewModels()
 
     private lateinit var chatBinding: FragmentChatBinding
+    private val TAG: String = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +42,32 @@ class MainActivity : AppCompatActivity() {
         binding.lifecycleOwner = this
         setContentView(binding.root)
         setSupportActionBar(binding.appBarMain.toolbar)
+
+        // The root of appBarMain is the CoordinatorLayout, which wraps the whole content area
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarMain.root) { view, windowInsets ->
+            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
+
+            // Apply top padding to the toolbar to avoid the status bar content overlap
+            binding.appBarMain.toolbar.setPadding(
+                binding.appBarMain.toolbar.paddingLeft,
+                systemBars.top,
+                binding.appBarMain.toolbar.paddingRight,
+                binding.appBarMain.toolbar.paddingBottom
+            )
+
+            // Apply bottom padding to the CoordinatorLayout to shrink it when the keyboard is open
+            view.setPadding(
+                view.paddingLeft,
+                view.paddingTop,
+                view.paddingRight,
+                ime.bottom
+            )
+
+            // Return the insets so that child views can also process them if they need to.
+            // This is especially important for things like the navigation drawer.
+            windowInsets
+        }
 
         chatBinding = FragmentChatBinding.inflate(layoutInflater)
 
@@ -68,12 +87,15 @@ class MainActivity : AppCompatActivity() {
                     binding.appBarMain.fab.hide()
                 }
             }
+            // Invalidate options menu to update visibility of "Buy me a coffee" button
+            invalidateOptionsMenu()
         }
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_chat, R.id.nav_welcome, R.id.nav_models, R.id.nav_history, R.id.nav_settings, R.id.nav_licenses
+                // R.id.webview has been removed from here so it gets a back arrow
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -86,10 +108,35 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        val buyCoffeeButton = menu?.findItem(R.id.buy_coffee_button)
+
+        if (navController.currentDestination?.id == R.id.webview) {
+            buyCoffeeButton?.isVisible = false
+        } else {
+            buyCoffeeButton?.isVisible = true
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val TAG: String = "BuyMeACoffee Fail"
+        Log.d(TAG, item.itemId.toString())
         return when (item.itemId) {
             R.id.buy_coffee_button -> {
-                Toast.makeText(this, "Buy me a coffee", Toast.LENGTH_LONG).show()
+                try{
+                    val navController = findNavController(R.id.nav_host_fragment_content_main)
+                    Log.d(TAG, navController.toString())
+                    val args = Bundle().apply {
+                        putString(WebViewFragment.URL_KEY, "https://buymeacoffee.com/zacharymcdaniel_nullform")
+                    }
+                    Log.d(TAG, args.toString())
+                    navController.navigate(R.id.webview, args)
+                    Log.d(TAG, "We made it to the end!")
+                }catch (e: Exception) {
+                    Log.e(TAG, e.message.toString())
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -98,6 +145,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)?.childFragmentManager?.primaryNavigationFragment
+
+        if (currentFragment is WebViewFragment) {
+            if (currentFragment.canWebViewGoBack()) {
+                currentFragment.webViewGoBack()
+                return true
+            }
+        }
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 }

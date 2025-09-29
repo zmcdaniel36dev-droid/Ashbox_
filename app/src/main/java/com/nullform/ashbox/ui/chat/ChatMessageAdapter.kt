@@ -65,10 +65,10 @@ class ChatMessageAdapter :
 
         when(holder) {
             is UserMessageViewHolder -> {
-                holder.binding.textViewMessageContent.text = message.content
+                holder.binding.textViewMessageContent.text = message.text
             }
             is AiMessageViewHolder -> {
-                holder.binding.textViewMessageContent.text = message.content
+                holder.binding.textViewMessageContent.text = message.text
             }
         }
     }

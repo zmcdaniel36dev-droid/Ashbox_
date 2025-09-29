@@ -50,13 +50,13 @@
             app:title="Save Chat History"
             app:defaultValue="true"
             app:summary="Saves your chat history"
-            app:icon="@drawable/ic_settings_chat_history"/>
+            app:icon="@drawable/ic_settings_chat_history" />
 
         <Preference
             app:key="clear_chat_history"
             app:title="Clear All Chat History"
             app:summary="Permanently delete all saved chat messages"
-            app:icon="@drawable/ic_settings_delete"/>
+            app:icon="@drawable/ic_settings_delete" />
 
         <Preference
             app:key="privacy_policy"

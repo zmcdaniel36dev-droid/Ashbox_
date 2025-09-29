@@ -1,6 +1,7 @@
 package com.nullform.ashbox.data.database
 
 import androidx.room.TypeConverter
+import com.nullform.ashbox.data.entity.SenderType // Added this import
 import java.util.Date
 
 class TypeConverters {
