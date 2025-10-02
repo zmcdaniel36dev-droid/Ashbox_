@@ -1,9 +1,13 @@
 package com.nullform.ashbox.ui.aiutils
 
 
+import android.content.Context
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.flow.Flow
 import android.util.Log
 import com.nullform.ashbox.data.entity.SenderType
+import com.nullform.ashbox.ui.models.ModelsFragment
+import com.nullform.ashbox.ui.models.ModelsViewModel
 import com.nullform.ashbox.data.entity.ChatMessage as AppChatMessage
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
@@ -49,7 +53,11 @@ object OllamaUtil {
     private const val TAG = "OllamaUtil"
     // Use 10.0.2.2 to connect to the host machine's localhost from the Android Emulator.
     private const val OLLAMA_API_URL = "http://192.168.5.225:11434/api/chat"
-    private const val OLLAMA_MODEL = "tinyllama"
+    private const val DEFAULT_MODEL = "tinyllama"
+    private const val CONTEXT_WINDOW_SIZE_KEY = "context_window_size"
+    private const val MODEL_NAME_KEY = "model_name"
+    private const val DEFAULT_CONTEXT_WINDOW_SIZE = 4096
+
 
     private val jsonStreamParser = Json {
         ignoreUnknownKeys = true
@@ -85,15 +93,24 @@ object OllamaUtil {
      * @param messages A list of the app's internal ChatMessage objects representing the conversation history.
      * @return The content of the AI's response as a String, or null if an error occurs.
      */
-    suspend fun getAiResponseStream(messages: List<AppChatMessage>): Flow<String>? = flow {
+    suspend fun getAiResponseStream(context: Context, messages: List<AppChatMessage>, modelName: String): Flow<String>? = flow {
         try {
             // Ensure stream is true for this endpoint
             Log.d(TAG, "Starting stream request to Ollama API at $OLLAMA_API_URL")
 
-            val ollamaMessages = mapToOllamaMessages(messages)
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+            val contextWindowSize = sharedPreferences.getString(CONTEXT_WINDOW_SIZE_KEY, DEFAULT_CONTEXT_WINDOW_SIZE.toString())?.toIntOrNull() ?: DEFAULT_CONTEXT_WINDOW_SIZE
+
+            val trimmedMessages = if (messages.size > contextWindowSize) {
+                messages.takeLast(contextWindowSize)
+            } else {
+                messages
+            }
+
+            val ollamaMessages = mapToOllamaMessages(trimmedMessages)
 
             val request =
-                OllamaRequest(model = OLLAMA_MODEL, messages = ollamaMessages, stream = true)
+                OllamaRequest(model = modelName, messages = ollamaMessages, stream = true)
 
             // Use preparePost to handle the streaming response
             client.preparePost(OLLAMA_API_URL) {

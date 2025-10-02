@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.nullform.ashbox.data.database.ChatDatabase
 import com.nullform.ashbox.data.dao.ChatMessageDao
+import com.nullform.ashbox.data.dao.ChatSessionDao
 import com.nullform.ashbox.ui.aiutils.OllamaUtil
 import dagger.Module
 import dagger.Provides
@@ -28,15 +29,21 @@ object AppModule {
     @Provides
     fun provideChatDatabase(@ApplicationContext context: Context): ChatDatabase {
         return Room.databaseBuilder(
-            context,
-            ChatDatabase::class.java,
-            "chat_database"
-        ).fallbackToDestructiveMigration().build()
+                context,
+                ChatDatabase::class.java,
+                "chat_database"
+            ).fallbackToDestructiveMigration(false).build()
     }
 
     @Singleton
     @Provides
     fun provideChatMessageDao(chatDatabase: ChatDatabase): ChatMessageDao {
         return chatDatabase.chatMessageDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideChatSessionDao(chatDatabase: ChatDatabase): ChatSessionDao {
+        return chatDatabase.chatSessionDao()
     }
 }

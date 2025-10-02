@@ -1,5 +1,6 @@
 package com.nullform.ashbox.ui.models
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -58,6 +59,8 @@ class ModelsFragment : Fragment() {
 
                         // Update the adapter to highlight the correct item in the list
                         modelsAdapter.setSelectedModelId(selectedModel.id)
+
+                        modelsViewModel.saveSelectedModel(selectedModel)
                     }
                 }
             }
@@ -67,5 +70,10 @@ class ModelsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    companion object {
+        private const val APP_PREFS_FILE_NAME = "ashbox_app_preferences" // Name for your app's preference file
+        private const val MODEL_NAME_KEY = "key_selected_model_name" // Key for the specific setting
     }
 }
